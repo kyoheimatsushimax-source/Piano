@@ -251,10 +251,63 @@
     color:var(--ink-soft)
   }
   .turn.you{color:var(--pink);font-size:20px}
-  .metro{display:flex;align-items:center;gap:14px;margin-top:4px}
-  .pend{width:78px;height:66px;flex:none}
-  .pend .arm{transform-origin:39px 62px}
-  .tempos{display:flex;gap:8px;flex:1}
+  /* ---------- メトロノーム ---------- */
+  .metro{margin-top:4px}
+  .mgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+  .mgrid button{
+    padding:11px 0;border-radius:14px;font-size:13.5px;font-weight:800;
+    background:rgba(36,28,59,.07)
+  }
+  .mgrid button[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
+  .bounce{
+    position:relative;height:150px;margin:14px 0 2px;
+    border-radius:18px;background:var(--paper);overflow:hidden;
+    transition:background .06s
+  }
+  .bounce.flash{background:var(--sun)}
+  .ball{
+    position:absolute;left:0;top:0;width:26px;height:26px;border-radius:50%;
+    background:var(--pink);box-shadow:0 3px 0 rgba(36,28,59,.16);will-change:transform
+  }
+  .pads{position:absolute;inset:0;display:flex}
+  .pad{
+    flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;
+    gap:5px;padding-bottom:9px
+  }
+  .pad .w{font-size:13px;font-weight:800;color:var(--ink-soft);min-height:17px}
+  .pad.on .w{color:var(--ink)}
+  .pad .subs{display:flex;gap:5px}
+  .pad .subs i{
+    width:9px;height:9px;border-radius:50%;background:rgba(36,28,59,.13);
+    transition:background .06s,transform .06s
+  }
+  .pad .subs i.on{background:var(--pink);transform:scale(1.4)}
+  .pad .big{
+    width:76%;height:9px;border-radius:999px;background:var(--paper-deep);
+    transition:background .06s,transform .06s
+  }
+  .pad.on .big{background:var(--sun);transform:scaleY(1.7)}
+  .bpmrow{display:flex;align-items:center;gap:10px;margin-top:12px}
+  .bpmrow button{
+    width:56px;padding:13px 0;border-radius:14px;font-size:20px;font-weight:800;
+    background:rgba(36,28,59,.07)
+  }
+  .bpmval{flex:1;text-align:center;font-size:19px;font-weight:800;font-variant-numeric:tabular-nums}
+  .mgo{
+    margin-top:12px;width:100%;padding:17px;border-radius:18px;
+    background:var(--sky);color:#fff;font-size:19px;font-weight:800;letter-spacing:.06em;
+    box-shadow:0 5px 0 #4B68D6
+  }
+  .mgo:active{transform:translateY(3px);box-shadow:0 2px 0 #4B68D6}
+  .mgo.on{background:var(--ink-soft);box-shadow:0 5px 0 #3D3457}
+  .toggles{display:flex;gap:8px;margin-top:12px}
+  .toggles button{
+    flex:1;padding:10px 0;border-radius:999px;font-size:12.5px;font-weight:800;
+    background:rgba(36,28,59,.07);color:var(--ink-soft)
+  }
+  .toggles button[aria-pressed="true"]{background:var(--mint);color:#fff}
+  .mnote{font-size:12.5px;line-height:1.75;color:var(--ink-soft);margin:14px 0 0}
+  .tempos{display:flex;gap:8px;margin-top:10px}
   .tempos button{
     flex:1;padding:11px 0;border-radius:14px;font-size:14px;font-weight:800;
     background:rgba(36,28,59,.07)
@@ -379,23 +432,37 @@
     <div class="card">
       <h2>メトロノーム</h2>
       <div class="metro">
-        <svg class="pend" viewBox="0 0 78 66" aria-hidden="true">
-          <path d="M39 62 L14 62 L28 8 L50 8 L64 62Z" fill="#241C3B" opacity=".12"/>
-          <g class="arm" id="arm"><rect x="37" y="10" width="4" height="52" rx="2" fill="#241C3B"/><rect x="31" y="26" width="16" height="11" rx="3" fill="#FF6F91"/></g>
-        </svg>
-        <div class="tempos" id="meters">
-          <button data-b="2">2びょうし</button>
-          <button data-b="3">3びょうし</button>
-          <button data-b="4" aria-pressed="true">4びょうし</button>
+        <div class="mgrid" id="meters">
+          <button data-m="0">2びょうし</button>
+          <button data-m="1">3びょうし</button>
+          <button data-m="2" aria-pressed="true">4びょうし</button>
+          <button data-m="3">8ぶんの6</button>
+          <button data-m="4">8ぶんの9</button>
+          <button data-m="5">8ぶんの12</button>
+        </div>
+        <div class="bounce" id="bounce">
+          <div class="pads" id="pads"></div>
+          <div class="ball" id="ball"></div>
+        </div>
+        <div class="bpmrow" id="bpmrow">
+          <button data-d="-2" aria-label="おそく">−</button>
+          <div class="bpmval" id="bpmval">♩=76</div>
+          <button data-d="2" aria-label="はやく">＋</button>
+        </div>
+        <div class="tempos" id="tempos">
+          <button data-t="56">ゆっくり</button>
+          <button data-t="76" aria-pressed="true">ふつう</button>
+          <button data-t="96">はやめ</button>
+        </div>
+        <button class="mgo" id="mgo">▶ スタート</button>
+        <div class="toggles">
+          <button id="tgSub" aria-pressed="true">こまかい おと</button>
+          <button id="tgWord" aria-pressed="true">ことば</button>
+          <button id="tgFlash" aria-pressed="false">ピカッ</button>
         </div>
       </div>
-      <div class="dots" id="dots"></div>
-      <div class="tempos" id="tempos" style="margin-top:12px">
-        <button data-t="0" aria-pressed="true">とめる</button>
-        <button data-t="60">ゆっくり</button>
-        <button data-t="76">ふつう</button>
-        <button data-t="96">はやめ</button>
-      </div>
+      <p class="mnote">8ぶんの6は「おおきな 2つ」の なかに「3つ」が はいっています。<br>
+      かぞえないで「いちご・みかん」と いいながら やってみよう。</p>
     </div>
   </section>
 
@@ -428,7 +495,8 @@
     <p>タイマーが終わると仲間が1匹うまれます。まずは1日1回・短時間から。<br>
     画面は「置いておく」もの。操作は始めと終わりの2タップだけで済むように作っています。<br><br>
     <b>おんぷ</b>は1日3分まで。楽譜に「ドレミ」を書き込むと読めなくなるので、書かずにここで練習を。<br>
-    <b>メトロノーム</b>は曲の最初の30秒だけ。ずっと合わせ続けると音楽が固くなります。</p>
+    <b>メトロノーム</b>は曲の最初の30秒だけ。ずっと合わせ続けると音楽が固くなります。<br><br>
+    <b>8ぶんの6</b>は「1〜6」と数えさせないでください。大きな拍は2つで、その中が3つに割れているだけです。ボールの着地が大きな拍。「いちご・みかん」と声に出しながら、体を左右に揺らすのが近道です。</p>
     <div class="row">
       <button id="closeSheet">とじる</button>
       <button class="danger" id="reset">きろくを けす</button>
@@ -730,7 +798,7 @@ const RHYTHMS=[
 const BEAT=750; // 80BPM
 let playing=false;
 
-function clap(vol=.42,freq=1700,dur=.13){
+function clap(vol=.42,freq=1700,dur=.13,when=0){
   try{
     ac=ac||new (window.AudioContext||window.webkitAudioContext)();
     if(ac.state==='suspended')ac.resume();
@@ -739,7 +807,7 @@ function clap(vol=.42,freq=1700,dur=.13){
     const s=ac.createBufferSource();s.buffer=b;
     const f=ac.createBiquadFilter();f.type='bandpass';f.frequency.value=freq;f.Q.value=.9;
     const g=ac.createGain();g.gain.value=vol;
-    s.connect(f);f.connect(g);g.connect(ac.destination);s.start();
+    s.connect(f);f.connect(g);g.connect(ac.destination);s.start(when||0);
   }catch(e){}
 }
 const beep=()=>clap(.13,3200,.05);
@@ -799,37 +867,132 @@ $('#rlist').addEventListener('click',async e=>{
   chime();$('#turn').textContent='ばっちり！ つぎも やってみよう';
 });
 
-/* メトロノーム（拍子つき） */
-let metro=null,swing=1,mBeats=4,mBpm=0,mIdx=0;
-function renderDots(){
-  $('#dots').innerHTML=Array.from({length:mBeats},()=>'<i></i>').join('');
+/* =========================================================
+   メトロノーム
+   b:大きな拍の数 / d:1拍の分割数（2=単純拍子, 3=複合拍子）
+   音は AudioContext の時刻で先読みスケジュール（setIntervalだとズレる）
+   絵は「弧を描いて落ちるボール」。着地＝拍。点滅とちがい予測できる。
+   ========================================================= */
+const METERS=[
+  {b:2,d:2,c:0},{b:3,d:2,c:0},{b:4,d:2,c:0},
+  {b:2,d:3,c:1},{b:3,d:3,c:1},{b:4,d:3,c:1}
+];
+const WORDS2=['もも','なし','くり','かき'];
+const WORDS3=['いちご','みかん','ばなな','さくら'];
+const LOOKAHEAD=.12, BALL=26;
+
+let mIdx=2,mBpm=76,mOn=false,mSub=true,mWord=true,mFlash=false;
+let gridT0=0,gridN=0,schedTimer=null,rafId=null,lastK=-1;
+let padXs=[],groundY=60,ampY=60;
+
+/* 複合拍子のBPMは付点4分音符＝大きな拍。単純拍子と同じ数字だと速すぎるので分ける */
+const TEMPOS={0:[56,76,96],1:[40,52,66]};
+const M=()=>METERS[mIdx];
+const subDur=()=>60/mBpm/M().d;
+
+function renderTempos(){
+  const t=TEMPOS[M().c],lab=['ゆっくり','ふつう','はやめ'];
+  $('#tempos').innerHTML=t.map((v,i)=>`<button data-t="${v}">${lab[i]}</button>`).join('');
+  syncTempoBtns();
 }
-function metroStep(){
-  const first=mIdx===0;
-  clap(first?.4:.15,first?1500:3400,first?.09:.05);
-  [...$('#dots').children].forEach((d,i)=>d.classList.toggle('on',i===mIdx));
-  swing*=-1;
-  const arm=$('#arm');
-  arm.style.transition=`transform ${60/mBpm*.9}s ease-in-out`;
-  arm.style.transform=`rotate(${swing*16}deg)`;
-  mIdx=(mIdx+1)%mBeats;
+
+function renderPads(){
+  const m=M(),w=m.d===3?WORDS3:WORDS2;
+  $('#pads').innerHTML=Array.from({length:m.b},(_,i)=>
+    `<div class="pad"><span class="w">${mWord?w[i%w.length]:''}</span>`+
+    `<span class="subs">${'<i></i>'.repeat(m.d)}</span><span class="big"></span></div>`
+  ).join('');
+  lastK=-1;
+  requestAnimationFrame(measure);
 }
-function metroRestart(){
-  clearInterval(metro);metro=null;mIdx=0;
-  [...$('#dots').children].forEach(d=>d.classList.remove('on'));
-  if(!mBpm){$('#arm').style.transform='rotate(0deg)';return}
-  metroStep();metro=setInterval(metroStep,60000/mBpm);
+function measure(){
+  const pads=[...$('#pads').children];
+  if(!pads.length)return;
+  padXs=pads.map(p=>p.offsetLeft+p.offsetWidth/2-BALL/2);
+  groundY=Math.max(20,pads[0].querySelector('.big').offsetTop-BALL-4);
+  ampY=Math.max(24,groundY-6);
+  if(!mOn)$('#ball').style.transform=`translate(${padXs[0]}px,${groundY}px)`;
 }
-$('#tempos').onclick=e=>{
-  const b=e.target.closest('button');if(!b)return;
-  [...e.currentTarget.children].forEach(x=>x.setAttribute('aria-pressed',x===b));
-  mBpm=+b.dataset.t;metroRestart();
-};
+window.addEventListener('resize',()=>requestAnimationFrame(measure));
+function paintBpm(){$('#bpmval').textContent=(M().c?'♩.':'♩')+'='+mBpm}
+
+function mSchedule(){
+  const m=M(),total=m.b*m.d,sd=subDur();
+  while(gridT0+gridN*sd < ac.currentTime+LOOKAHEAD){
+    const t=gridT0+gridN*sd,k=gridN%total,sub=k%m.d,beat=(k/m.d)|0;
+    if(sub===0)clap(beat===0?.42:.26, beat===0?1400:2300, beat===0?.10:.07, t);
+    else if(mSub)clap(.09,3800,.035,t);
+    gridN++;
+  }
+}
+function mFrame(){
+  if(!mOn)return;
+  const m=M(),total=m.b*m.d,el=(ac.currentTime-gridT0)/subDur();
+  if(el>=0&&padXs.length===m.b){
+    const k=Math.floor(el)%total,beat=(k/m.d)|0,sub=k%m.d;
+    const p=((el/m.d)%1+1)%1;
+    const from=padXs[beat],to=padXs[(beat+1)%m.b];
+    const tall=(m.b>1&&beat===m.b-1)?1.3:1;      /* 小節の折り返しは高い弧 */
+    const y=Math.max(2,groundY-ampY*tall*4*p*(1-p));
+    $('#ball').style.transform=`translate(${from+(to-from)*p}px,${y}px)`;
+    if(k!==lastK){
+      lastK=k;
+      [...$('#pads').children].forEach((pd,i)=>{
+        pd.classList.toggle('on',i===beat);
+        [...pd.querySelector('.subs').children].forEach((d,j)=>
+          d.classList.toggle('on',i===beat&&j<=sub));
+      });
+      if(mFlash&&sub===0){
+        const l=$('#bounce');l.classList.add('flash');setTimeout(()=>l.classList.remove('flash'),80);
+      }
+    }
+  }
+  rafId=requestAnimationFrame(mFrame);
+}
+function metroStart(){
+  ac=ac||new (window.AudioContext||window.webkitAudioContext)();
+  if(ac.state==='suspended')ac.resume();
+  measure();
+  mOn=true;gridN=0;lastK=-1;gridT0=ac.currentTime+.15;
+  clearInterval(schedTimer);schedTimer=setInterval(mSchedule,25);mSchedule();
+  cancelAnimationFrame(rafId);rafId=requestAnimationFrame(mFrame);
+  $('#mgo').textContent='■ とめる';$('#mgo').classList.add('on');
+}
+function metroStop(){
+  mOn=false;clearInterval(schedTimer);schedTimer=null;
+  cancelAnimationFrame(rafId);rafId=null;lastK=-1;
+  $('#mgo').textContent='▶ スタート';$('#mgo').classList.remove('on');
+  [...$('#pads').children].forEach(pd=>{
+    pd.classList.remove('on');
+    [...pd.querySelector('.subs').children].forEach(d=>d.classList.remove('on'));
+  });
+  if(padXs.length)$('#ball').style.transform=`translate(${padXs[0]}px,${groundY}px)`;
+}
+function metroRestart(){if(mOn){metroStop();metroStart()}}
+
 $('#meters').onclick=e=>{
   const b=e.target.closest('button');if(!b)return;
   [...e.currentTarget.children].forEach(x=>x.setAttribute('aria-pressed',x===b));
-  mBeats=+b.dataset.b;renderDots();metroRestart();
+  const was=M().c;
+  mIdx=+b.dataset.m;
+  if(M().c!==was)mBpm=TEMPOS[M().c][1];
+  renderPads();renderTempos();paintBpm();metroRestart();
 };
+$('#tempos').onclick=e=>{
+  const b=e.target.closest('button');if(!b)return;
+  mBpm=+b.dataset.t;paintBpm();syncTempoBtns();metroRestart();
+};
+$('#bpmrow').onclick=e=>{
+  const b=e.target.closest('button');if(!b)return;
+  mBpm=Math.min(160,Math.max(40,mBpm+(+b.dataset.d)));paintBpm();syncTempoBtns();metroRestart();
+};
+function syncTempoBtns(){
+  [...$('#tempos').children].forEach(x=>x.setAttribute('aria-pressed',+x.dataset.t===mBpm));
+}
+$('#mgo').onclick=()=>mOn?metroStop():metroStart();
+$('#tgSub').onclick=e=>{mSub=!mSub;e.currentTarget.setAttribute('aria-pressed',mSub)};
+$('#tgWord').onclick=e=>{mWord=!mWord;e.currentTarget.setAttribute('aria-pressed',mWord);renderPads()};
+$('#tgFlash').onclick=e=>{mFlash=!mFlash;e.currentTarget.setAttribute('aria-pressed',mFlash)};
 
 /* =========================================================
    おんぷ（五線 → けんばん）
@@ -944,9 +1107,8 @@ document.querySelector('nav').onclick=e=>{
   [...e.currentTarget.children].forEach(x=>x.setAttribute('aria-selected',x===b));
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('on'));
   $('#v-'+b.dataset.v).classList.add('on');
-  if(b.dataset.v!=='rhythm'&&metro){clearInterval(metro);metro=null;mBpm=0;
-    $('#arm').style.transform='rotate(0deg)';
-    [...$('#tempos').children].forEach((x,i)=>x.setAttribute('aria-pressed',i===0));}
+  if(b.dataset.v!=='rhythm'&&mOn)metroStop();
+  if(b.dataset.v==='rhythm')requestAnimationFrame(measure);
 };
 $('#openSheet').onclick=()=>$('#sheet').classList.add('on');
 $('#closeSheet').onclick=()=>$('#sheet').classList.remove('on');
@@ -973,7 +1135,7 @@ if('serviceWorker' in navigator){
   const s=await store.get();
   if(s)state=Object.assign(state,s);
   paintEgg();paintClock();buildKB();buildKB2();renderWeek();renderZukan();renderMission();
-  renderRhythm();renderDots();newDir(true);paintStreak();
+  renderRhythm();renderPads();renderTempos();paintBpm();newDir(true);paintStreak();
 })();
 </script>
 </body>

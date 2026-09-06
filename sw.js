@@ -1,7 +1,7 @@
 /* ピアノのたまご — Service Worker
    ★アプリを更新したら、必ず下の CACHE の数字を上げること（v1 → v2）。
      上げないと、家のiPadは古いままキャッシュから開き続けます。 */
-const CACHE = 'piano-egg-v1';
+const CACHE = 'piano-egg-v2';
 const ASSETS = [
   './',
   './index.html',
