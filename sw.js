@@ -1,8 +1,8 @@
 /* ピアノのたまご — Service Worker
-   ★アプリを更新したら、必ず下の CACHE の数字を上げること（v3 → v4）。
+   ★アプリを更新したら、必ず下の CACHE の数字を上げること（v4 → v5）。
    ※github.io は他の自作アプリと同じ場所なので、消すのは piano-egg- で始まる古いキャッシュだけ。
      上げないと、家のiPadは古いままキャッシュから開き続けます。 */
-const CACHE = 'piano-egg-v3';
+const CACHE = 'piano-egg-v4';
 const ASSETS = [
   './',
   './index.html',
