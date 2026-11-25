@@ -8,9 +8,9 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="ピアノのたまご">
-<link rel="manifest" href="manifest.json">
-<link rel="icon" href="icon-192.png">
-<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="manifest" href="./manifest.json">
+<link rel="icon" href="./icon-192.png">
+<link rel="apple-touch-icon" href="./apple-touch-icon.png">
 <style>
   :root{
     --ink:#241C3B;
@@ -151,6 +151,30 @@
     padding:12px 18px;border-radius:999px;background:var(--sky);color:#fff;
     font-size:16px;font-weight:800;box-shadow:0 4px 0 #4B68D6
   }
+
+  /* ---------- わおんあて ---------- */
+  .wa-q{text-align:center;font-size:19px;font-weight:800;min-height:34px;margin:4px 0 10px}
+  .wa-q.good{color:var(--mint)}
+  .wa-q.miss{color:var(--pink)}
+  .wa-ans{display:flex;gap:12px}
+  .wa-ans button{
+    flex:1;padding:18px 0 14px;border-radius:20px;font-size:18px;font-weight:800;color:var(--ink);
+    display:flex;flex-direction:column;align-items:center;gap:4px
+  }
+  .wa-ans button b{font-size:46px;line-height:1}
+  .wa-ans .sun{background:#FFE29A;box-shadow:0 5px 0 #E5B53A}
+  .wa-ans .rain{background:#C9D5FF;box-shadow:0 5px 0 #8EA2E8}
+  .wa-ans button:active{transform:translateY(4px);box-shadow:none}
+  .wa-ans button.hit{outline:4px solid var(--mint)}
+  .wa-listen{display:flex;gap:8px;margin-top:16px}
+  .wa-listen button{
+    flex:1;padding:11px 0;border-radius:999px;font-size:13.5px;font-weight:800;
+    background:rgba(36,28,59,.07);color:var(--ink-soft)
+  }
+  #v-sound .quizbar button{padding:15px 4px;font-size:15px;white-space:nowrap}
+  .wa-q small{display:block;font-size:16px;margin-top:2px}
+  .wa-play{display:block;margin:0 auto 6px}
+  .wa-stamps{text-align:center;font-size:22px;min-height:30px;margin-top:12px;letter-spacing:2px}
 
   /* ---------- ずかん ---------- */
   .zukan{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
@@ -391,10 +415,28 @@
     <div class="quizbar">
       <button id="modeFree" aria-pressed="true">じゆうに おす</button>
       <button id="modeQuiz" aria-pressed="false">おとあて</button>
+      <button id="modeChord" aria-pressed="false">わおんあて</button>
     </div>
-    <div class="card">
+    <div class="card" id="kbCard">
       <div class="quizq" id="quizq">すきな けんばんを おしてね</div>
       <div class="kb" id="kb"></div>
+    </div>
+    <div class="card" id="chordArea" style="display:none">
+      <div class="levels" id="waLevels">
+        <button data-l="1" aria-pressed="true">はじめて</button>
+        <button data-l="2" aria-pressed="false">いろんな たかさ</button>
+      </div>
+      <button class="replay wa-play" id="waPlay">🔊 きいてみよう</button>
+      <div class="wa-q" id="waQ">はれ かな？ あめ かな？</div>
+      <div class="wa-ans" id="waAns">
+        <button class="sun" data-a="maj"><b>☀️</b>はれ</button>
+        <button class="rain" data-a="min"><b>☔️</b>あめ</button>
+      </div>
+      <div class="wa-listen">
+        <button id="waSun">☀️ はれの おと</button>
+        <button id="waRain">☔️ あめの おと</button>
+      </div>
+      <div class="wa-stamps" id="waStamps"></div>
     </div>
     <p class="empty-msg" style="padding:8px 4px">ほんものの ピアノでも<br>おなじ おとを さがしてみよう</p>
   </section>
@@ -496,6 +538,7 @@
     画面は「置いておく」もの。操作は始めと終わりの2タップだけで済むように作っています。<br><br>
     <b>おんぷ</b>は1日3分まで。楽譜に「ドレミ」を書き込むと読めなくなるので、書かずにここで練習を。<br>
     <b>メトロノーム</b>は曲の最初の30秒だけ。ずっと合わせ続けると音楽が固くなります。<br><br>
+    <b>わおんあて</b>は「はれ（明るい）・あめ（暗い）」を聴き分ける遊びです。正解・不正解より、まず一緒に聴いて「どんな感じ？」と話すことを大事に。最初は「はれの おと」「あめの おと」ボタンで聴き比べてから。慣れたら、ほんもののピアノで「ド・ミ・ソ」「ラ・ド・ミ」を同時に押してみましょう。Cなどの記号はまだ教えなくて大丈夫です。<br><br>
     <b>8ぶんの6</b>は「1〜6」と数えさせないでください。大きな拍は2つで、その中が3つに割れているだけです。ボールの着地が大きな拍。「いちご・みかん」と声に出しながら、体を左右に揺らすのが近道です。</p>
     <div class="row">
       <button id="closeSheet">とじる</button>
@@ -539,15 +582,24 @@ const NOTES=[
   {n:'シ',f:493.88,c:'#FF6FC4'},{n:'ド',f:523.25,c:'#FF6F91'}
 ];
 const BLACKS=[{f:277.18,l:0},{f:311.13,l:1},{f:369.99,l:3},{f:415.30,l:4},{f:466.16,l:5}];
-function tone(freq,dur=1.1){
+let master=null;
+function masterOut(){ // 和音やチャイムが重なっても音が割れないように、最後に圧縮をかける
+  if(!master){
+    const c=ac.createDynamicsCompressor();
+    c.threshold.value=-10;c.knee.value=8;c.ratio.value=6;c.attack.value=.003;c.release.value=.2;
+    c.connect(ac.destination);master=c;
+  }
+  return master;
+}
+function tone(freq,dur=1.1,vol=.3,delay=0){
   try{
     ac=ac||new (window.AudioContext||window.webkitAudioContext)();
     if(ac.state==='suspended')ac.resume();
-    const t=ac.currentTime, g=ac.createGain();
+    const t=ac.currentTime+delay, g=ac.createGain();
     g.gain.setValueAtTime(0,t);
-    g.gain.linearRampToValueAtTime(.3,t+.012);
+    g.gain.linearRampToValueAtTime(vol,t+.012);
     g.gain.exponentialRampToValueAtTime(.0001,t+dur);
-    g.connect(ac.destination);
+    g.connect(masterOut());
     [[1,1],[2,.32],[3,.14]].forEach(([m,v])=>{
       const o=ac.createOscillator(), og=ac.createGain();
       o.type='sine'; o.frequency.value=freq*m; og.gain.value=v;
@@ -697,7 +749,7 @@ $('#bornClose').onclick=()=>$('#born').classList.remove('on');
 /* =========================================================
    けんばん
    ========================================================= */
-let quizMode=false,answer=null;
+let quizMode=false,answer=null,sGen=0; // sGen：画面を切り替えたら古い予約(setTimeout)を無効にする
 function buildKB(){
   const kb=$('#kb');kb.innerHTML='';
   NOTES.forEach((n,i)=>{
@@ -717,27 +769,89 @@ function buildKB(){
 }
 function flash(el){el.classList.add('hit');setTimeout(()=>el.classList.remove('hit'),160)}
 function newQuiz(){
+  const g=sGen;
   answer=Math.floor(Math.random()*NOTES.length);
   $('#quizq').innerHTML='<button class="replay" id="replay">🔊 もういちど</button> どの おと かな？';
   $('#replay').onclick=()=>tone(NOTES[answer].f);
-  setTimeout(()=>tone(NOTES[answer].f),350);
+  setTimeout(()=>{if(g===sGen)tone(NOTES[answer].f)},350);
 }
 function check(i){
   if(NOTES[i].f===NOTES[answer].f){
     $('#quizq').innerHTML='<span class="pop">せいかい！ '+NOTES[answer].n+' だったよ 🎉</span>';
-    chime();setTimeout(newQuiz,1900);
+    const g=sGen;chime();setTimeout(()=>{if(g===sGen)newQuiz()},1900);
   }else{
     $('#quizq').innerHTML='<span class="pop">おしい！ もういちど きいてみよう</span>';
-    setTimeout(()=>{$('#quizq').innerHTML='<button class="replay" id="replay">🔊 もういちど</button> どの おと かな？';$('#replay').onclick=()=>tone(NOTES[answer].f);tone(NOTES[answer].f)},1300);
+    const g=sGen;setTimeout(()=>{if(g!==sGen)return;$('#quizq').innerHTML='<button class="replay" id="replay">🔊 もういちど</button> どの おと かな？';$('#replay').onclick=()=>tone(NOTES[answer].f);tone(NOTES[answer].f)},1300);
   }
 }
-$('#modeFree').onclick=()=>{
-  quizMode=false;$('#modeFree').setAttribute('aria-pressed','true');$('#modeQuiz').setAttribute('aria-pressed','false');
-  $('#quizq').textContent='すきな けんばんを おしてね';
+function setSoundMode(m){
+  sGen++;
+  ['modeFree','modeQuiz','modeChord'].forEach(id=>$('#'+id).setAttribute('aria-pressed',id===m));
+  quizMode=(m==='modeQuiz');
+  $('#kbCard').style.display=m==='modeChord'?'none':'block';
+  $('#chordArea').style.display=m==='modeChord'?'block':'none';
+}
+$('#modeFree').onclick=()=>{setSoundMode('modeFree');$('#quizq').textContent='すきな けんばんを おしてね'};
+$('#modeQuiz').onclick=()=>{setSoundMode('modeQuiz');newQuiz()};
+$('#modeChord').onclick=()=>{if($('#modeChord').getAttribute('aria-pressed')==='true')return;setSoundMode('modeChord');paintWa();newWa()};
+
+/* =========================================================
+   わおんあて（明るい＝はれ／暗い＝あめ）
+   はじめて：ドミソ と ラドミ だけ
+   いろんな たかさ：ドミソ・ファラド・ソシレ と ラドミ・レファラ・ミソシ
+   ※コード記号は出さない。音名だけを見せて、ほんもののピアノにつなげる
+   ========================================================= */
+const CH={
+  C :{a:'maj',n:'ド・ミ・ソ',  f:[261.63,329.63,392.00]},
+  F :{a:'maj',n:'ファ・ラ・ド',f:[349.23,440.00,523.25]},
+  G :{a:'maj',n:'ソ・シ・レ',  f:[196.00,246.94,293.66]},
+  Am:{a:'min',n:'ラ・ド・ミ',  f:[220.00,261.63,329.63]},
+  Am1:{a:'min',n:'ラ・ド・ミ', f:[261.63,329.63,440.00]}, // はじめて用：ドミソと同じ高さに並べ、低い＝あめ と高さで当てられないようにする
+  Dm:{a:'min',n:'レ・ファ・ラ',f:[293.66,349.23,440.00]},
+  Em:{a:'min',n:'ミ・ソ・シ',  f:[329.63,392.00,493.88]}
 };
-$('#modeQuiz').onclick=()=>{
-  quizMode=true;$('#modeQuiz').setAttribute('aria-pressed','true');$('#modeFree').setAttribute('aria-pressed','false');
-  newQuiz();
+const WA_SET={1:['C','Am1'],2:['C','F','G','Am','Dm','Em']};
+let waLevel=1,waCur=null,waLast=null,waStreak=0,waLock=false;
+function chord(k,dur=1.8){
+  const c=CH[k];
+  c.f.forEach((f,i)=>tone(f,dur,.13,i*.025)); // ほんの少しずらして、ピアノで押したような響きに
+  tone(c.f[0]/2,dur,.07);                      // 一番下の音のオクターブ下を足して、響きを厚くする
+}
+function newWa(){
+  const set=WA_SET[waLevel],g=sGen;
+  // 同じ和音が3回続かないようにする（5〜6歳は「さっきと同じ」で迷いやすい）
+  let k;do{k=set[Math.floor(Math.random()*set.length)]}while(k===waCur&&k===waLast&&set.length>1);
+  waLast=waCur;waCur=k;waLock=false;
+  $('#waQ').className='wa-q';$('#waQ').textContent='はれ かな？ あめ かな？';
+  $('#waAns').querySelectorAll('button').forEach(b=>b.classList.remove('hit'));
+  setTimeout(()=>{if(g===sGen)chord(waCur)},350);
+}
+function paintWa(){
+  $('#waStamps').textContent='🌈'.repeat(Math.min(waStreak,10))+(waStreak>10?' ×'+waStreak:'');
+}
+$('#waPlay').onclick=()=>{if(waCur)chord(waCur)};
+$('#waSun').onclick=()=>chord(waLevel===1?'C':['C','F','G'][Math.floor(Math.random()*3)]);
+$('#waRain').onclick=()=>chord(waLevel===1?'Am1':['Am','Dm','Em'][Math.floor(Math.random()*3)]);
+$('#waAns').onclick=e=>{
+  const b=e.target.closest('button');if(!b||!waCur||waLock)return;
+  const c=CH[waCur];
+  if(b.dataset.a===c.a){
+    waLock=true;waStreak++;paintWa();b.classList.add('hit');const g=sGen;
+    $('#waQ').className='wa-q good pop';
+    $('#waQ').innerHTML=(c.a==='maj'?'せいかい！ はれの おと ☀️':'せいかい！ あめの おと ☔️')+'<small>'+c.n+'</small>';
+    setTimeout(()=>{if(g===sGen)chime()},250);setTimeout(()=>{if(g===sGen)newWa()},2400);
+  }else{
+    // まちがえても 🌈 はへらさない（減点されると嫌になりやすいため）
+    waLock=true;const g=sGen;
+    $('#waQ').className='wa-q miss';
+    $('#waQ').textContent='もういちど きいてみよう';
+    setTimeout(()=>{if(g!==sGen)return;chord(waCur);setTimeout(()=>{if(g===sGen)waLock=false},600)},500);
+  }
+};
+$('#waLevels').onclick=e=>{
+  const b=e.target.closest('button');if(!b)return;
+  [...e.currentTarget.children].forEach(x=>x.setAttribute('aria-pressed',x===b));
+  sGen++;waLevel=+b.dataset.l;waCur=waLast=null;waStreak=0;paintWa();newWa();
 };
 
 /* =========================================================
@@ -1107,6 +1221,7 @@ document.querySelector('nav').onclick=e=>{
   [...e.currentTarget.children].forEach(x=>x.setAttribute('aria-selected',x===b));
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('on'));
   $('#v-'+b.dataset.v).classList.add('on');
+  sGen++;
   if(b.dataset.v!=='rhythm'&&mOn)metroStop();
   if(b.dataset.v==='rhythm')requestAnimationFrame(measure);
 };
